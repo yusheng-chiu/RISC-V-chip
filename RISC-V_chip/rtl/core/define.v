@@ -17,6 +17,10 @@
 `define RegZeroData 32'b0   //for zero data
 `define RegZeroAddr 5'b0
 
+`define ForwardingExe 2'b01
+`define ForwardingMem 2'b10
+`define NoForward 2'b00
+
 //bus
 `define InstAddrBus 7:0     //ROM 64個指令 6 + 2(byte alignment)
 `define InstBus 31:0

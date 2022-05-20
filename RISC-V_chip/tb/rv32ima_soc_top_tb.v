@@ -11,7 +11,7 @@ module rv32ima_soc_top_tb();
     end
 
     initial begin
-        $readmemb("inst_rom.data", rv32ima_soc_top_0.rom_0.inst_mem);
+        $readmemb("inst_rom3.data", rv32ima_soc_top_0.rom_0.inst_mem);
     end
 
     initial begin

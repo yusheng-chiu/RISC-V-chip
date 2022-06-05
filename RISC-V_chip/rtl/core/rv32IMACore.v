@@ -38,6 +38,8 @@ module rv32IMACore(
     //EXE----------------------
     wire[`InstAddrBus] pc_exe;
     //from control unit
+    wire[`RegAddrBus] rs1_exe;
+    wire[`RegAddrBus] rs2_exe;
     wire Branch_exe;
     wire MemRead_exe;
     wire MemtoReg_exe;
@@ -152,6 +154,8 @@ module rv32IMACore(
         //input----------
         .reg_data_1_i(reg_data_1_id),
         .reg_data_2_i(reg_data_2_id),
+        .reg_addr_1_i(rs1_id),
+        .reg_addr_2_i(rs2_id),
 
         .Branch_i(Branch_id), 
         .MemRead_i(MemRead_id), //Mem LW
@@ -168,6 +172,8 @@ module rv32IMACore(
         //output---------
         .reg_data_1_o(reg_data_1_exe),
         .reg_data_2_o(reg_data_2_exe),
+        .reg_addr_1_o(rs1_exe),
+        .reg_addr_2_o(rs2_exe),
 
         .Branch_o(Branch_exe), 
         .MemRead_o(MemRead_exe), //Mem LW
@@ -183,10 +189,29 @@ module rv32IMACore(
         .B_imm_o(B_imm_o_exe)
     );
 
+    wire[1:0] forwarding_rs1;
+    wire[1:0] forwarding_rs2;
+
+    forwarding_unit forwarding_unit_0(
+        .rst_i(rst_i),
+        .id_exe_rs1_i(rs1_exe),
+        .id_exe_rs2_i(rs2_exe),
+        .exe_mem_rd_i(rd_mem),
+        .mem_wb_rd_i(rd_o_wb),
+
+        .forwarding_rs1_o(forwarding_rs1),
+        .forwarding_rs2_o(forwarding_rs2)
+    );
+
     exe exe_0(
         .rst_i(rst_i),
         .reg_data_1_i(reg_data_1_exe),
         .reg_data_2_i(reg_data_2_exe),
+
+        .forwarding_rs1_i(forwarding_rs1),
+        .forwarding_rs2_i(forwarding_rs2),
+        .exe_mem_data_i(w_data_mem),
+        .mem_wb_data_i(w_data_o_wb),
 
         .ALUOp_i(ALUOp_exe),
         .ALUSrc_i(ALUSrc_exe), //EXE

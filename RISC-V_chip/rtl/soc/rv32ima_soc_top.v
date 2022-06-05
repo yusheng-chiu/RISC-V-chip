@@ -23,4 +23,5 @@ module rv32ima_soc_top(
 
         .inst_o(rom_data_rom)
     );
+
 endmodule

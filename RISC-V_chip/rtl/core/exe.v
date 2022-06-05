@@ -5,6 +5,7 @@ module exe(
     //from ID/EXE
     input wire[`RegDataBus] reg_data_1_i,
     input wire[`RegDataBus] reg_data_2_i,
+    input wire[`RegAddrBus] shamt_exe_i,
 
     //for forwarding
     input wire[1:0] forwarding_rs1_i,
@@ -22,11 +23,11 @@ module exe(
     output reg[`InstAddrBus] pc_o,
     output reg[`RegDataBus] w_data_o
 );
-    wire[`RegDataBus] reg_data1_w;
-    wire[`RegDataBus] reg_data2_w;
 
     reg[`RegDataBus] op1;
     reg[`RegDataBus] op2;
+
+    reg op1_ge_op2_signed;
 
     // assign reg_data1_w = reg_data_1_i;
     // assign reg_data2_w = reg_data_2_i;  
@@ -62,7 +63,6 @@ module exe(
             default: op1 <= `RegZeroData;
         endcase
     end
-
     
     always @(*) begin   //ALU operation
         if (rst_i == `RstEnable) begin
@@ -80,6 +80,26 @@ module exe(
                     end
                     `SUB:begin
                         w_data_o <= op1 - op2;
+                    end
+                    `SLT:begin
+                        op1_ge_op2_signed <= ($signed(op1) >= $signed(op2));
+                        w_data_o <= {32{(~op1_ge_op2_signed)}} & 32'h1;
+                    end
+                    `SLTU:begin
+                        op1_ge_op2_signed <= (op1 >= op2);
+                        w_data_o <= {32{(~op1_ge_op2_signed)}} & 32'h1;
+                    end
+                    `XOR:begin
+                        w_data_o <= op1 ^ op2;
+                    end
+                    `SLL:begin
+                        w_data_o <= op1 << shamt_exe_i;
+                    end
+                    `SRL:begin
+                        w_data_o <= op1 >> shamt_exe_i;
+                    end
+                    `SRAL:begin
+                        w_data_o <= op1 >>> shamt_exe_i;
                     end
             endcase
         end

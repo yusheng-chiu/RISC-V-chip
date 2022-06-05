@@ -24,6 +24,7 @@ end
 always @(posedge clk_i) begin
     if (rst_i == `RstEnable) begin
         pc_next <= `CpuResetAddr;
+        pc_o <= `CpuResetAddr;
     end else begin
         pc_o <= pc_next;
         pc_next <= pc_next + 4'b0100;

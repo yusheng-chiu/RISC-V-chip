@@ -8,6 +8,7 @@ module id(
     //to register file
     output reg[`RegAddrBus] rs1_o,
     output reg[`RegAddrBus] rs2_o,
+    output reg[`RegAddrBus] shamt_o,
     output wire reg_read1_e_o, //to regfile!!!
     output wire reg_read2_e_o,
     //from control unit
@@ -34,6 +35,7 @@ wire[`Funct7Bus] funct7 = inst_i[31:25];//R-type
 wire[4:0] rd = inst_i[11:7];
 wire[4:0] rs1 = inst_i[19:15];
 wire[4:0] rs2 = inst_i[24:20];
+wire[4:0] shamt = inst_i[24:20];
 wire[`RegDataBus] imm = {{20{inst_i[31]}}, inst_i[31:20]};
 wire[`RegDataBus] imm_for_s = {{20{inst_i[31]}}, {inst_i[30:25]}, {inst_i[11:7]}};
 wire[`RegDataBus] imm_b = {{19{inst_i[31]}}, {inst_i[7]}, {inst_i[30:25]}, {inst_i[11:8]}, {1'b0}};
@@ -43,6 +45,7 @@ always @(*) begin
         R_imm_o <= `RegZeroData;
         rs1_o <= `RegZeroAddr;
         rs2_o <= `RegZeroAddr;
+        shamt_o <= `RegZeroAddr; //5'b0
         reg_dest_o <= `RegZeroAddr;
         pc_o <= `ZeroInstAddr;
         S_imm_o <= `RegZeroAddr;
@@ -51,6 +54,7 @@ always @(*) begin
         R_imm_o <= imm;
         rs1_o <= rs1;
         rs2_o <= rs2;
+        shamt_o <= shamt;
         reg_dest_o <= rd;
         pc_o <= inst_addr_i;
         S_imm_o <= imm_for_s;

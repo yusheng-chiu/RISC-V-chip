@@ -10,6 +10,7 @@ module id_exe (
     //from id
     input wire[`RegAddrBus] reg_addr_1_i,
     input wire[`RegAddrBus] reg_addr_2_i,
+    input wire[`RegAddrBus] shamt_i,
 
     //signal from control unit
     input wire Branch_i, 
@@ -30,6 +31,7 @@ module id_exe (
     output reg[`RegDataBus] reg_data_2_o,
     output reg[`RegAddrBus] reg_addr_1_o,
     output reg[`RegAddrBus] reg_addr_2_o,
+    output reg[`RegAddrBus] shamt_o,
 
     output reg Branch_o, 
     output reg MemRead_o, //Mem LW
@@ -52,6 +54,7 @@ module id_exe (
             reg_data_2_o <= `RegZeroData;
             reg_addr_1_o <= `RegZeroAddr;
             reg_addr_2_o <= `RegZeroAddr;
+            shamt_o <= `RegZeroAddr;
 
             Branch_o <= `ZeroSignal;
             MemRead_o <= `ZeroSignal; //Mem LW
@@ -70,6 +73,7 @@ module id_exe (
             reg_data_2_o <= reg_data_2_i;
             reg_addr_1_o <= reg_addr_1_i;
             reg_addr_2_o <= reg_addr_2_i;
+            shamt_o <= shamt_i;
 
             Branch_o <= Branch_i;
             MemRead_o <= MemRead_i; //Mem LW

@@ -44,8 +44,193 @@ always @(*) begin
                     reg_read2_e_o <= `ReadDisable;
                     RegWrite_o <= `OneSignal;
                 end
+                `ADDI:begin
+                    Branch_o <= `ZeroSignal;
+                    MemRead_o <= `ZeroSignal;
+                    MemtoReg_o <= `ZeroSignal;
+                    MemWrite_o <= `ZeroSignal;
+                    ALUOp_o <= `ADD;
+                    ALUSrc_o <= `Imm;
+                    reg_read1_e_o <= `ReadEnable;
+                    reg_read2_e_o <= `ReadDisable;
+                    RegWrite_o <= `OneSignal;
+                end
+                `SLTI:begin
+                    Branch_o <= `ZeroSignal;
+                    MemRead_o <= `ZeroSignal;
+                    MemtoReg_o <= `ZeroSignal;
+                    MemWrite_o <= `ZeroSignal;
+                    ALUOp_o <= `SLT;
+                    ALUSrc_o <= `Imm;
+                    reg_read1_e_o <= `ReadEnable;
+                    reg_read2_e_o <= `ReadDisable;
+                    RegWrite_o <= `OneSignal;
+                end
+                `SLTIU:begin
+                    Branch_o <= `ZeroSignal;
+                    MemRead_o <= `ZeroSignal;
+                    MemtoReg_o <= `ZeroSignal;
+                    MemWrite_o <= `ZeroSignal;
+                    ALUOp_o <= `SLTU;
+                    ALUSrc_o <= `Imm;
+                    reg_read1_e_o <= `ReadEnable;
+                    reg_read2_e_o <= `ReadDisable;
+                    RegWrite_o <= `OneSignal;
+                end
+                `XORI:begin
+                    Branch_o <= `ZeroSignal;
+                    MemRead_o <= `ZeroSignal;
+                    MemtoReg_o <= `ZeroSignal;
+                    MemWrite_o <= `ZeroSignal;
+                    ALUOp_o <= `XOR;
+                    ALUSrc_o <= `Imm;
+                    reg_read1_e_o <= `ReadEnable;
+                    reg_read2_e_o <= `ReadDisable;
+                    RegWrite_o <= `OneSignal;
+                end
+                `ANDI:begin
+                    Branch_o <= `ZeroSignal;
+                    MemRead_o <= `ZeroSignal;
+                    MemtoReg_o <= `ZeroSignal;
+                    MemWrite_o <= `ZeroSignal;
+                    ALUOp_o <= `AND;
+                    ALUSrc_o <= `Imm;
+                    reg_read1_e_o <= `ReadEnable;
+                    reg_read2_e_o <= `ReadDisable;
+                    RegWrite_o <= `OneSignal;
+                end
+                `SLLI:begin
+                    Branch_o <= `ZeroSignal;
+                    MemRead_o <= `ZeroSignal;
+                    MemtoReg_o <= `ZeroSignal;
+                    MemWrite_o <= `ZeroSignal;
+                    ALUOp_o <= `SLL;
+                    ALUSrc_o <= `Imm;
+                    reg_read1_e_o <= `ReadEnable;
+                    reg_read2_e_o <= `ReadDisable;
+                    RegWrite_o <= `OneSignal;
+                end
+                `SRLI:begin
+                    Branch_o <= `ZeroSignal;
+                    MemRead_o <= `ZeroSignal;
+                    MemtoReg_o <= `ZeroSignal;
+                    MemWrite_o <= `ZeroSignal;
+                    ALUSrc_o <= `Imm;
+                    reg_read1_e_o <= `ReadEnable;
+                    reg_read2_e_o <= `ReadDisable;
+                    RegWrite_o <= `OneSignal;
+                    if (funct7_i == 7'b0000000) begin
+                        ALUOp_o <= `SRL;
+                    end else begin
+                        ALUOp_o <= `SRAL;
+                    end
+                end
+                default:begin
+                end
                 endcase
             end 
+            `R_type:begin
+                case (funct3_i)
+                    `ADDI:begin
+                        Branch_o <= `ZeroSignal;
+                        MemRead_o <= `ZeroSignal;
+                        MemtoReg_o <= `ZeroSignal;
+                        MemWrite_o <= `ZeroSignal;
+                        ALUOp_o <= `ADD;
+                        reg_read1_e_o <= `ReadEnable;
+                        reg_read2_e_o <= `ReadEnable;
+                        ALUSrc_o <= !`Imm;
+                        RegWrite_o <= `OneSignal;
+                        if (funct7_i == 7'b0100000) begin
+                            ALUOp_o <= `SUB;
+                        end else begin
+                        end
+                    end
+                    `SLLI:begin
+                        Branch_o <= `ZeroSignal;
+                        MemRead_o <= `ZeroSignal;
+                        MemtoReg_o <= `ZeroSignal;
+                        MemWrite_o <= `ZeroSignal;
+                        ALUOp_o <= `SLL;
+                        reg_read1_e_o <= `ReadEnable;
+                        reg_read2_e_o <= `ReadDisable;
+                        ALUSrc_o <= `Imm;
+                        RegWrite_o <= `OneSignal;
+                    end
+                    `SLTI:begin
+                        Branch_o <= `ZeroSignal;
+                        MemRead_o <= `ZeroSignal;
+                        MemtoReg_o <= `ZeroSignal;
+                        MemWrite_o <= `ZeroSignal;
+                        ALUOp_o <= `SLT;
+                        ALUSrc_o <= !`Imm;
+                        reg_read1_e_o <= `ReadEnable;
+                        reg_read2_e_o <= `ReadEnable;
+                        RegWrite_o <= `OneSignal;
+                    end
+                    `SLTIU:begin
+                        Branch_o <= `ZeroSignal;
+                        MemRead_o <= `ZeroSignal;
+                        MemtoReg_o <= `ZeroSignal;
+                        MemWrite_o <= `ZeroSignal;
+                        ALUOp_o <= `SLTU;
+                        ALUSrc_o <= !`Imm;
+                        reg_read1_e_o <= `ReadEnable;
+                        reg_read2_e_o <= `ReadEnable;
+                        RegWrite_o <= `OneSignal;
+                    end
+                    `XORI:begin
+                        Branch_o <= `ZeroSignal;
+                        MemRead_o <= `ZeroSignal;
+                        MemtoReg_o <= `ZeroSignal;
+                        MemWrite_o <= `ZeroSignal;
+                        ALUOp_o <= `XOR;
+                        ALUSrc_o <= !`Imm;
+                        reg_read1_e_o <= `ReadEnable;
+                        reg_read2_e_o <= `ReadEnable;
+                        RegWrite_o <= `OneSignal;
+                    end
+                    `SRLI:begin
+                        Branch_o <= `ZeroSignal;
+                        MemRead_o <= `ZeroSignal;
+                        MemtoReg_o <= `ZeroSignal;
+                        MemWrite_o <= `ZeroSignal;
+                        ALUSrc_o <= `Imm;
+                        reg_read1_e_o <= `ReadEnable;
+                        reg_read2_e_o <= `ReadDisable;
+                        RegWrite_o <= `OneSignal;
+                        if (funct7_i == 7'b0000000) begin
+                            ALUOp_o <= `SRL;
+                        end else begin
+                            ALUOp_o <= `SRAL;
+                        end
+                    end
+                    `ORI:begin
+                        Branch_o <= `ZeroSignal;
+                        MemRead_o <= `ZeroSignal;
+                        MemtoReg_o <= `ZeroSignal;
+                        MemWrite_o <= `ZeroSignal;
+                        ALUOp_o <= `OR;
+                        ALUSrc_o <= !`Imm;
+                        reg_read1_e_o <= `ReadEnable;
+                        reg_read2_e_o <= `ReadEnable;
+                        RegWrite_o <= `OneSignal;
+                    end
+                    `ANDI:begin
+                        Branch_o <= `ZeroSignal;
+                        MemRead_o <= `ZeroSignal;
+                        MemtoReg_o <= `ZeroSignal;
+                        MemWrite_o <= `ZeroSignal;
+                        ALUOp_o <= `AND;
+                        ALUSrc_o <= !`Imm;
+                        reg_read1_e_o <= `ReadEnable;
+                        reg_read2_e_o <= `ReadEnable;
+                        RegWrite_o <= `OneSignal;
+                    end                    
+                    default:begin
+                    end
+                endcase
+            end
             default: begin
                 Branch_o <= `ZeroSignal;
                 MemRead_o <= `ZeroSignal;

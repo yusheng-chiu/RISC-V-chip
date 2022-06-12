@@ -7,7 +7,7 @@ module rom(
     output reg[`InstBus] inst_o
 );
 
-    reg[`InstBus] inst_mem[`InstMemNum-1:0];   
+    reg[`InstBus] inst_mem[0:`InstMemNum-1];   
 
     // .initial begin
     //     $readmemh("inst_rom.data", inst_mem);

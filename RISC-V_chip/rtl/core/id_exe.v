@@ -3,6 +3,7 @@
 module id_exe (
     input wire rst_i,
     input wire clk_i,
+    input wire flush_enable_i,
 
     // from register file
     input wire[`RegDataBus] reg_data_1_i,
@@ -10,6 +11,7 @@ module id_exe (
     //from id
     input wire[`RegAddrBus] reg_addr_1_i,
     input wire[`RegAddrBus] reg_addr_2_i,
+    input wire[`RegAddrBus] shamt_i,
 
     //signal from control unit
     input wire Branch_i, 
@@ -25,11 +27,15 @@ module id_exe (
     input wire[`InstAddrBus] pc_i, //for branch connected by inst_addr_i;
     input wire[`RegDataBus] S_imm_i,
     input wire[`RegDataBus] B_imm_i,
+    input wire[`InstAddrBus] branch_addr_i,
+    input wire[`InstAddrBus] jump_addr_i,
+    input wire jump_enable_i,
     //---------output---------
     output reg[`RegDataBus] reg_data_1_o,
     output reg[`RegDataBus] reg_data_2_o,
     output reg[`RegAddrBus] reg_addr_1_o,
     output reg[`RegAddrBus] reg_addr_2_o,
+    output reg[`RegAddrBus] shamt_o,
 
     output reg Branch_o, 
     output reg MemRead_o, //Mem LW
@@ -43,15 +49,19 @@ module id_exe (
     output reg[`RegAddrBus] reg_dest_o, // rd
     output reg[`InstAddrBus] pc_o, //for branch
     output reg[`RegDataBus] S_imm_o,
-    output reg[`RegDataBus] B_imm_o
+    output reg[`RegDataBus] B_imm_o,
+    output reg[`InstAddrBus] branch_addr_o,
+    output reg[`InstAddrBus] jump_addr_o,
+    output reg jump_enable_o
 );
 
     always @(posedge clk_i) begin
-        if(rst_i == `RstEnable) begin
+        if(rst_i == `RstEnable || flush_enable_i) begin
             reg_data_1_o <= `RegZeroData;
             reg_data_2_o <= `RegZeroData;
             reg_addr_1_o <= `RegZeroAddr;
             reg_addr_2_o <= `RegZeroAddr;
+            shamt_o <= `RegZeroAddr;
 
             Branch_o <= `ZeroSignal;
             MemRead_o <= `ZeroSignal; //Mem LW
@@ -65,11 +75,15 @@ module id_exe (
             pc_o <= `ZeroInstAddr;
             S_imm_o <= `RegZeroData;
             B_imm_o <= `RegZeroData;
+            branch_addr_o <= `ZeroInstAddr;
+            jump_addr_o <= `ZeroInstAddr;
+            jump_enable_o <= `ZeroSignal;
         end else begin
             reg_data_1_o <= reg_data_1_i;
             reg_data_2_o <= reg_data_2_i;
             reg_addr_1_o <= reg_addr_1_i;
             reg_addr_2_o <= reg_addr_2_i;
+            shamt_o <= shamt_i;
 
             Branch_o <= Branch_i;
             MemRead_o <= MemRead_i; //Mem LW
@@ -83,6 +97,9 @@ module id_exe (
             pc_o <= pc_i;
             S_imm_o <= S_imm_i;
             B_imm_o <= B_imm_i;
+            branch_addr_o <= branch_addr_i;
+            jump_addr_o <= jump_addr_i;
+            jump_enable_o <= jump_enable_i;
         end
     end
 endmodule

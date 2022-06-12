@@ -28,16 +28,29 @@ module rv32IMACore(
     wire MemWrite_id;
     wire ALUSrc_id;
     wire RegWrite_id;
+    //from id branch address
+    wire[`InstAddrBus] branch_addr_id2exe;
+    wire[`InstAddrBus] jump_addr_id2exe;
+    wire jump_enable_id;
+    wire[`InstAddrBus] jump_addr_o_exe;
+    wire jump_enable_o_exe;
     //from ID
+    wire[`RegAddrBus] shamt_id;
     wire[`RegDataBus] R_imm_o_id;
     wire[`RegAddrBus] reg_dest_o_id;
     wire[`RegDataBus] S_imm_o_id;
     wire[`RegDataBus] B_imm_o_id;
     wire[`RegDataBus] reg_data_1_id;
     wire[`RegDataBus] reg_data_2_id;
+    //bcu
+    wire branch_enable_w;
+
     //EXE----------------------
     wire[`InstAddrBus] pc_exe;
     //from control unit
+    wire[`RegAddrBus] rs1_exe;
+    wire[`RegAddrBus] rs2_exe;
+    wire[`RegAddrBus] shamt_exe;
     wire Branch_exe;
     wire MemRead_exe;
     wire MemtoReg_exe;
@@ -45,6 +58,10 @@ module rv32IMACore(
     wire MemWrite_exe;
     wire ALUSrc_exe;
     wire RegWrite_exe;
+    wire[`InstAddrBus] branch_addr_o_exe;
+    wire[`InstAddrBus] branch_addr_o_exe2if;
+    wire[`InstAddrBus] jump_addr_o_exe2if;
+    wire jump_enable_o_exe2if;
     //from ID
     wire[`RegDataBus] R_imm_o_exe;
     wire[`RegAddrBus] reg_dest_o_exe;
@@ -81,6 +98,10 @@ module rv32IMACore(
     pc pc_0(
         .rst_i(rst_i),
         .clk_i(clk_i),
+        .branch_addr_i(branch_addr_o_exe2if),
+        .branch_enable_i(branch_enable_w),
+        .jump_addr_i(jump_addr_o_exe2if),
+        .jump_enable_i(jump_enable_o_exe2if),
 
         .pc_o(pc_if),   //output
         .ce_o(rom_ce_o)
@@ -99,18 +120,22 @@ module rv32IMACore(
         .clk_i(clk_i),
         .inst_i(rom_data_i),
         .inst_addr_i(pc_if),
+        .flush_enable_i(flush_w),
 
         .inst_o(inst_id),   //output
         .inst_addr_o(pc_id)     //output
     );
+    wire[`InstAddrBus] pc_id_exe;
 
     id id_0(
         .rst_i(rst_i),
+        .clk_i(clk_i),
         .inst_addr_i(pc_id),
         .inst_i(inst_id),
         //output to register file
         .rs1_o(rs1_id),             
         .rs2_o(rs2_id),
+        .shamt_o(shamt_id),
         .reg_read1_e_o(reg_read1_e_id),
         .reg_read2_e_o(reg_read2_e_id),
         //output to id/exe
@@ -124,9 +149,12 @@ module rv32IMACore(
 
         .R_imm_o(R_imm_o_id),
         .reg_dest_o(reg_dest_o_id),
-        .pc_o(pc_id),
+        .pc_o(pc_id_exe),
         .S_imm_o(S_imm_o_id),
-        .B_imm_o(B_imm_o_id)
+        .B_imm_o(B_imm_o_id),
+        .branch_addr_o(branch_addr_id2exe),
+        .jump_addr_o(jump_addr_id2exe),
+        .jump_enable_o(jump_enable_id)
     );
 
     register_file register_file_0(
@@ -149,9 +177,13 @@ module rv32IMACore(
     id_exe id_exe_0(
         .rst_i(rst_i),
         .clk_i(clk_i),
+        .flush_enable_i(flush_w),
         //input----------
         .reg_data_1_i(reg_data_1_id),
         .reg_data_2_i(reg_data_2_id),
+        .reg_addr_1_i(rs1_id),
+        .reg_addr_2_i(rs2_id),
+        .shamt_i(shamt_id),
 
         .Branch_i(Branch_id), 
         .MemRead_i(MemRead_id), //Mem LW
@@ -162,12 +194,18 @@ module rv32IMACore(
         .RegWrite_i(RegWrite_id),
         .R_imm_i(R_imm_o_id), // imm
         .reg_dest_i(reg_dest_o_id), // rd
-        .pc_i(pc_id), //for branch connected by inst_addr_i;
+        .pc_i(pc_id_exe), //for branch connected by inst_addr_i;
         .S_imm_i(S_imm_o_id),
         .B_imm_i(B_imm_o_id),
+        .branch_addr_i(branch_addr_id2exe),
+        .jump_addr_i(jump_addr_id2exe),
+        .jump_enable_i(jump_enable_id),
         //output---------
         .reg_data_1_o(reg_data_1_exe),
         .reg_data_2_o(reg_data_2_exe),
+        .reg_addr_1_o(rs1_exe),
+        .reg_addr_2_o(rs2_exe),
+        .shamt_o(shamt_exe),
 
         .Branch_o(Branch_exe), 
         .MemRead_o(MemRead_exe), //Mem LW
@@ -180,13 +218,53 @@ module rv32IMACore(
         .reg_dest_o(reg_dest_o_exe), // rd
         .pc_o(pc_exe), //for branch connected by inst_addr_i;
         .S_imm_o(S_imm_o_exe),
-        .B_imm_o(B_imm_o_exe)
+        .B_imm_o(B_imm_o_exe),
+        .branch_addr_o(branch_addr_o_exe),
+        .jump_addr_o(jump_addr_o_exe),
+        .jump_enable_o(jump_enable_o_exe)
+    );
+
+    wire[1:0] forwarding_rs1;
+    wire[1:0] forwarding_rs2;
+
+    forwarding_unit forwarding_unit_0(
+        .rst_i(rst_i),
+        .id_exe_rs1_i(rs1_exe),
+        .id_exe_rs2_i(rs2_exe),
+        .exe_mem_rd_i(rd_mem),
+        .mem_wb_rd_i(rd_o_wb),
+
+        .forwarding_rs1_o(forwarding_rs1),
+        .forwarding_rs2_o(forwarding_rs2)
+    );
+
+    // bcu bcu0(
+    //     .rst_i(rst_i),
+    //     .op1_i(reg_data_1_id),
+    //     .op2_i(reg_data_2_id),
+    //     .aluop_i(ALUOp_id),
+
+    //     .branch_enable_o(branch_enable_w)
+    // );
+    wire flush_w;
+
+    hazard_detection_unit hazard_detection_unit_0(
+        .rst_i(rst_i),
+        .branch_enable_i(branch_enable_w),
+
+        .flush_enable_o(flush_w)
     );
 
     exe exe_0(
         .rst_i(rst_i),
         .reg_data_1_i(reg_data_1_exe),
         .reg_data_2_i(reg_data_2_exe),
+        .shamt_exe_i(shamt_exe),
+
+        .forwarding_rs1_i(forwarding_rs1),
+        .forwarding_rs2_i(forwarding_rs2),
+        .exe_mem_data_i(w_data_mem),
+        .mem_wb_data_i(w_data_o_wb),
 
         .ALUOp_i(ALUOp_exe),
         .ALUSrc_i(ALUSrc_exe), //EXE
@@ -195,9 +273,16 @@ module rv32IMACore(
         .R_imm_i(R_imm_o_exe), //imm
         .S_imm_i(S_imm_o_exe),
         .B_imm_i(B_imm_o_exe),
+        .branch_addr_i(branch_addr_o_exe),
+        .jump_addr_i(jump_addr_o_exe),
+        .jump_enable_i_exe(jump_enable_o_exe),
         //output------------
         .pc_o(pc_exe_mem),
-        .w_data_o(w_data_exe)
+        .w_data_o(w_data_exe),
+        .branch_addr_o(branch_addr_o_exe2if),
+        .branch_enable_o_exe(branch_enable_w),
+        .jump_addr_o(jump_addr_o_exe2if),
+        .jump_enable_o_exe(jump_enable_o_exe2if)
     );
 
     exe_mem exe_mem_0(

@@ -5,13 +5,14 @@ module if_id (
     input wire clk_i,
     input wire[`InstBus] inst_i,
     input wire[`InstAddrBus] inst_addr_i,
+    input wire flush_enable_i,
 
     output reg[`InstBus] inst_o,
     output reg[`InstAddrBus] inst_addr_o //pc_o
 );
 
 always @(posedge clk_i) begin
-    if (rst_i == `RstEnable) begin
+    if (rst_i == `RstEnable || flush_enable_i) begin //flush if/id
         inst_o <= `ZeroInst;
         inst_addr_o <= `ZeroInstAddr;
     end else begin
